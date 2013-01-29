@@ -44,11 +44,11 @@ BOTLIBS = -lskivvy -ldl
 BOTFLAGS = -Wl,-E
 
 plugin_LTLIBRARIES =  \
-	skivvy-plugin-chanops.la
+	skivvy-plugin-pfinder.la
 
 # IrcBot plugins
-skivvy_plugin_chanops_la_SOURCES = plugin-chanops.cpp
-skivvy_plugin_chanops_la_LDFLAGS = -module
+skivvy_plugin_pfinder_la_SOURCES = plugin-pfinder.cpp
+skivvy_plugin_pfinder_la_LDFLAGS = -module
 
 docs_DATA = $(top_srcdir)/docs/manual.text
 

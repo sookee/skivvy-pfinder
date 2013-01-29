@@ -27,8 +27,8 @@ http://www.gnu.org/licenses/gpl-2.0.html
 
 '-----------------------------------------------------------------*/
 
-#include <skivvy/plugin-pfinder.h>
-#include <skivvy/plugin-pfinder-oacom.h>
+#include <skivvy-pfinder/plugin-pfinder.h>
+#include <skivvy-pfinder/plugin-pfinder-oacom.h>
 
 #include <iomanip>
 #include <array>
