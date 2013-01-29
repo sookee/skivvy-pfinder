@@ -35,6 +35,9 @@ AC_PROG_INSTALL
 AC_LANG(C++)
 AC_MSG_CHECKING(if $CXX supports C++11)
 
+AM_DISABLE_STATIC
+LT_INIT([disable-static],[dlopen])
+LT_LANG([C++])
 #CXXFLAGS="$CXXFLAGS -std=gnu++11"
 #AC_COMPILE_IFELSE(AC_LANG_PROGRAM([],[for(int i: {0})]),[cpp11=yes],[cpp11=no])
 #AC_MSG_RESULT($cpp11)

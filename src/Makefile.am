@@ -21,9 +21,9 @@
 # 
 # '-----------------------------------------------------------------*/
 
-#skivvydir = $(prefix)/include/skivvy
-plugindir = $(datadir)/skivvy/plugins
-docsdir = $(datadir)/skivvy
+plugin_includedir = $(prefix)/include/skivvy-pfinder
+plugin_librarydir = $(datadir)/skivvy/plugins
+plugin_manualsdir = $(datadir)/skivvy
 
 DEF_FLAGS = \
 	-D _GLIBCXX_USE_NANOSLEEP \
@@ -43,13 +43,17 @@ BOTLIBS = -lskivvy -ldl
 # -Wl,-E is required for programs that load plugin's
 BOTFLAGS = -Wl,-E
 
-plugin_LTLIBRARIES =  \
+plugin_include_HEADERS = \
+	$(srcdir)/include/skivvy-pfinder/plugin-pfinder.h \
+	$(srcdir)/include/skivvy-pfinder/plugin-pfinder-oacom.h
+
+plugin_library_LTLIBRARIES =  \
 	skivvy-plugin-pfinder.la
 
 # IrcBot plugins
-skivvy_plugin_pfinder_la_SOURCES = plugin-pfinder.cpp
+skivvy_plugin_pfinder_la_SOURCES = plugin-pfinder.cpp plugin-pfinder-oacom.cpp
 skivvy_plugin_pfinder_la_LDFLAGS = -module
 
-docs_DATA = $(top_srcdir)/docs/manual.text
+plugin_manuals_DATA = $(top_srcdir)/docs/manual.text
 
 extra_DIST = $(top_srcdir)/docs/manual.text
