@@ -839,56 +839,27 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 		std::vector<stpl> sps;
 		while(sgl(iss, player))
 		{
-			bug_var(player);
 			if(!sgl(sgl(siss(player) >> sp.frags >> sp.ping >> std::ws, sp.oaname, '"'), sp.oaname, '"'))
 				continue;
-			bug_var(sp.oaname);
-
 			if((sp.size = remove_oa_codes(sp.oaname).size()) > max)
 				max = sp.size;
-			bug_var(max);
-			bug_var(sp.size);
-			bug_var(remove_oa_codes(sp.oaname));
-			bug("");
 			sps.push_back(sp);
 		}
 
-		bug("=========================================");
-		bug_var(sps.size());
-		bug_var(max);
-		bug("=========================================");
-
-		//std::sort(sps.begin(), sps.end(), [](const stpl& sp1, const stpl& sp2) { return sp1.frags >= sp2.frags; });
+		std::sort(sps.begin(), sps.end(), [](const stpl& sp1, const stpl& sp2) { return sp1.frags >= sp2.frags; });
 
 		siz header_size = remove_oa_codes(oasd.sv_hostname).size();
 		if(header_size > max)
 			max = header_size;
 
-		bot.fc_reply(msg, prompt + oa_handle_to_irc(oasd.sv_hostname + str(max - header_size + 1, ' ')));
+		bot.fc_reply(msg, prompt + oa_handle_to_irc(oasd.sv_hostname + str(max - header_size + 6, ' ')));
 
-		// allow for indent of players from header
-		if(max > 6)
-			max -= 5;
-
-		bug("=========================================");
-		bug_var(sps.size());
-		bug_var(max);
-		bug("=========================================");
 		for(const stpl& sp: sps)
 		{
-			bug_var(sp.oaname);
-			bug_var(sp.frags);
-			bug_var(sp.ping);
-			bug_var(sp.size);
-			bug_var(remove_oa_codes(sp.oaname));
-			bug("");
 			str space(3 - std::to_string(sp.frags).size(), ' ');
-
-			bug("-----------------------------------------");
 			bot.fc_reply(msg, prompt + IRC_BOLD + blkwht
 				+ "[" + space + std::to_string(sp.frags) + "] " + IRC_NORMAL
 				+ oa_handle_to_irc(sp.oaname + str(max - sp.size, ' ')));
-			bug("-----------------------------------------");
 		}
 
 		break;

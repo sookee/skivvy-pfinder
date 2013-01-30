@@ -46,8 +46,8 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include <skivvy-pfinder/plugin-pfinder-oacom.h>
 #include <skivvy/types.h>
 
-#define TIMEOUT 200
-#define MASTER_TIMEOUT 400
+#define TIMEOUT 500
+#define MASTER_TIMEOUT 10000
 
 namespace skivvy { namespace oacom {
 
@@ -55,7 +55,8 @@ using namespace skivvy;
 using namespace skivvy::utils;
 using namespace skivvy::types;
 
-bool aocom(const str& cmd, str_vec& packets, const str& host, int port)
+bool aocom(const str& cmd, str_vec& packets, const str& host, int port
+	, siz wait = TIMEOUT)
 {
 //	bug_func();
 //	bug_var(cmd);
@@ -87,7 +88,7 @@ bool aocom(const str& cmd, str_vec& packets, const str& host, int port)
 
 //	bug("connecting to : " << host << ":" << port);
 
-	st_time_point timeout = st_clk::now() + std::chrono::milliseconds(MASTER_TIMEOUT);
+	st_time_point timeout = st_clk::now() + std::chrono::milliseconds(wait);
 
 	int n = 0;
 	while((n = connect(cs, (struct sockaddr *) &sin, sizeof(sin))) < 0 && errno == EINPROGRESS)
@@ -141,7 +142,7 @@ bool aocom(const str& cmd, str_vec& packets, const str& host, int port)
 	n = sizeof(buf);
 	while(n == sizeof(buf))
 	{
-		timeout = st_clk::now() + std::chrono::milliseconds(TIMEOUT);
+		timeout = st_clk::now() + std::chrono::milliseconds(wait);
 		while((n = recv(cs, buf, sizeof(buf), MSG_DONTWAIT)) ==  -1 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
 		{
 			if(st_clk::now() > timeout)
@@ -174,7 +175,7 @@ typedef std::vector<oa_server_t> oa_server_vec;
 bool getservers(oa_server_vec& servers)
 {
 	str_vec packets;
-	if(!aocom("getservers 71 empty full", packets, "dpmaster.deathmask.net", 27950))
+	if(!aocom("getservers 71 empty full", packets, "dpmaster.deathmask.net", 27950, MASTER_TIMEOUT))
 		return false;
 
 	const str header = "\xFF\xFF\xFF\xFFgetserversResponse";
@@ -222,7 +223,7 @@ bool getservers(oa_server_vec& servers)
 bool getstatus(const str& host, siz port, str& status)
 {
 	str_vec packets;
-	if(!aocom("getstatus\x0A", packets, host, port))
+	if(!aocom("getstatus\x0A", packets, host, port, TIMEOUT))
 		return false;
 
 	const str header = "\xFF\xFF\xFF\xFFstatusResponse\x0A";
