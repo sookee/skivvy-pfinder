@@ -849,8 +849,8 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 		std::sort(sps.begin(), sps.end(), [](const stpl& sp1, const stpl& sp2) { return sp1.frags >= sp2.frags; });
 
 		siz header_size = remove_oa_codes(oasd.sv_hostname).size();
-		if(header_size > max)
-			max = header_size;
+		if(header_size - 6 > max)
+			max = header_size - 6;
 
 		bot.fc_reply(msg, prompt + oa_handle_to_irc(oasd.sv_hostname + str(max - header_size + 6, ' ')));
 
