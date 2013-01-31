@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _SOOKEE_IRCBOT_PFINDER_H_
-#define _SOOKEE_IRCBOT_PFINDER_H_
+#ifndef _SKIVVY_PLUGIN_PFINDER_H_
+#define _SKIVVY_PLUGIN_PFINDER_H_
 /*
  * ircbot-pfinder.h
  *
@@ -37,7 +37,11 @@ http://www.gnu.org/licenses/gpl-2.0.html
 
 #include <chrono>
 
-namespace skivvy { namespace ircbot {
+namespace skivvy { namespace pfinder {
+
+using namespace skivvy;
+using namespace skivvy::types;
+using namespace skivvy::ircbot;
 
 str html_handle_to_irc(str html);
 
@@ -212,6 +216,6 @@ public:
 	virtual call_ptr create_call() const { return call_ptr(new rpc::local_call); }
 };
 
-}} // sookee::ircbot
+}} // skivvy::pfinder
 
-#endif // _SOOKEE_IRCBOT_PFINDER_H_
+#endif // _SKIVVY_PLUGIN_PFINDER_H_

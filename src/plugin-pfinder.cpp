@@ -27,8 +27,8 @@ http://www.gnu.org/licenses/gpl-2.0.html
 
 '-----------------------------------------------------------------*/
 
-#include <skivvy-pfinder/plugin-pfinder.h>
-#include <skivvy-pfinder/plugin-pfinder-oacom.h>
+#include <skivvy/plugin-pfinder.h>
+#include <skivvy/plugin-pfinder-oacom.h>
 
 #include <iomanip>
 #include <array>
@@ -52,7 +52,7 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include <skivvy/network.h>
 #include <skivvy/openarena.h>
 
-namespace skivvy { namespace ircbot {
+namespace skivvy { namespace pfinder {
 
 IRC_BOT_PLUGIN(PFinderIrcBotPlugin);
 PLUGIN_INFO("pfinder", "OA Player Finder", "0.1");
@@ -64,6 +64,7 @@ using namespace skivvy::oacom;
 using namespace skivvy::types;
 using namespace skivvy::utils;
 using namespace skivvy::string;
+using namespace skivvy::ircbot;
 
 const str MAX_MATCHES = "pfinder.max_matches";
 const siz MAX_MATCHES_DEFAULT = 8;
@@ -466,8 +467,8 @@ void PFinderIrcBotPlugin::cvar(const message& msg)
 	cvar_set cvars;
 
 	cvar_t cvar;
-	while(ifs >> cvar)
-		if(bot.wild_match("*" + var + "*", lowercase(cvar.name)))
+	while(ifs >> cvar) // fixed? {bug #25}
+		if(bot.wild_match("*" + lowercase(var) + "*", lowercase(cvar.name)))
 			cvars.insert(cvar);
 
 	if(cvars.empty())
@@ -1434,4 +1435,4 @@ bool PFinderIrcBotPlugin::rpc(rpc::call& c)
 	return false;
 }
 
-}} // sookee::ircbot
+}} // skivvy::pfinder

@@ -43,7 +43,7 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include <sstream>
 
 #include <skivvy/logrep.h>
-#include <skivvy-pfinder/plugin-pfinder-oacom.h>
+#include <skivvy/plugin-pfinder-oacom.h>
 #include <skivvy/types.h>
 
 #define TIMEOUT 500

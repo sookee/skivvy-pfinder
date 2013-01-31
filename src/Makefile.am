@@ -21,9 +21,9 @@
 # 
 # '-----------------------------------------------------------------*/
 
-plugin_includedir = $(prefix)/include/skivvy-pfinder
-plugin_librarydir = $(datadir)/skivvy/plugins
-plugin_manualsdir = $(datadir)/skivvy
+plugin_includedir = $(includedir)/skivvy
+plugin_librarydir = $(libdir)/skivvy
+plugin_manualsdir = $(mandir)/skivvy
 
 DEF_FLAGS = \
 	-D _GLIBCXX_USE_NANOSLEEP \
@@ -44,16 +44,22 @@ BOTLIBS = -lskivvy -ldl
 BOTFLAGS = -Wl,-E
 
 plugin_include_HEADERS = \
-	$(srcdir)/include/skivvy-pfinder/plugin-pfinder.h \
-	$(srcdir)/include/skivvy-pfinder/plugin-pfinder-oacom.h
+	$(srcdir)/include/skivvy/plugin-pfinder.h \
+	$(srcdir)/include/skivvy/plugin-pfinder-oacom.h
 
 plugin_library_LTLIBRARIES =  \
 	skivvy-plugin-pfinder.la
 
 # IrcBot plugins
 skivvy_plugin_pfinder_la_SOURCES = plugin-pfinder.cpp plugin-pfinder-oacom.cpp
-skivvy_plugin_pfinder_la_LDFLAGS = -module
+skivvy_plugin_pfinder_la_LDFLAGS = -module -avoid-version
 
 plugin_manuals_DATA = $(top_srcdir)/docs/manual.text
 
 extra_DIST = $(top_srcdir)/docs/manual.text
+
+install-data-hook: $(plugin_library_LTLIBRARIES)
+	for m in $(plugin_library_LTLIBRARIES); do \
+		base=`echo $$m | sed 's/\..*//'`; \
+		rm -f $(plugin_librarydir)/$$base.la; \
+	done
