@@ -46,7 +46,7 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include <skivvy/plugin-pfinder-oacom.h>
 #include <skivvy/types.h>
 
-#define TIMEOUT 500
+#define TIMEOUT 1000
 #define MASTER_TIMEOUT 10000
 
 namespace skivvy { namespace oacom {
