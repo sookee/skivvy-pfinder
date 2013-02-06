@@ -455,7 +455,7 @@ void PFinderIrcBotPlugin::cvar(const message& msg)
 
 	str skip,var;// = lowercase(msg.get_user_params());
 	siz n = 1;
-	siss iss(msg.get_user_params());
+	siss iss(msg.get_user_params_cp());
 	ios::getstring(iss, var);
 	sgl(iss, skip, '#') >> n;
 
@@ -472,7 +472,7 @@ void PFinderIrcBotPlugin::cvar(const message& msg)
 			cvars.insert(cvar);
 
 	if(cvars.empty())
-		bot.fc_reply(msg, msg.get_user_params() + " did not match any cvar");
+		bot.fc_reply(msg, msg.get_user_params_cp() + " did not match any cvar");
 	else
 	{
 		const siz size = cvars.size();
@@ -722,7 +722,7 @@ bool PFinderIrcBotPlugin::oaslist(const message& msg)
 
 	str wild;
 	siz batch = 1; // batch
-	siss iss(msg.get_user_params());
+	siss iss(msg.get_user_params_cp());
 
 	if(!(iss >> wild))
 		return bot.cmd_error(msg, prompt + "!oalist <wildcard> *(#n)");
@@ -883,7 +883,7 @@ bool PFinderIrcBotPlugin::oasname(const message& msg)
 		return false;
 
 	if(newname.empty())
-		return bot.cmd_error(msg,  prompt + bot.help(msg.get_user_cmd()));
+		return bot.cmd_error(msg,  prompt + bot.help(msg.get_user_cmd_cp()));
 
 	if(newname.size() > 6)
 		return bot.cmd_error(msg, prompt + "New name must be 6 characters or less.");
@@ -921,10 +921,10 @@ void PFinderIrcBotPlugin::oafind(const message& msg)
 
 	time_t start = std::time(0);
 
-	str handle = msg.get_user_params();
+	str handle = msg.get_user_params_cp();
 	if(trim(handle).empty())
 	{
-		bot.fc_reply(msg, help(msg.get_user_cmd()));
+		bot.fc_reply(msg, help(msg.get_user_cmd_cp()));
 		return;
 	}
 
@@ -976,11 +976,11 @@ void PFinderIrcBotPlugin::oalink(const message& msg)
 	BUG_COMMAND(msg);
 
 	str group, handle;
-	std::istringstream iss(msg.get_user_params());
+	std::istringstream iss(msg.get_user_params_cp());
 
 	if(!(iss >> group))
 	{
-		bot.fc_reply(msg, help(msg.get_user_cmd()));
+		bot.fc_reply(msg, help(msg.get_user_cmd_cp()));
 		return;
 	}
 
@@ -1012,7 +1012,7 @@ void PFinderIrcBotPlugin::oalist(const message& msg)
 {
 	BUG_COMMAND(msg);
 
-	str group = msg.get_user_params();
+	str group = msg.get_user_params_cp();
 	if(!trim(group).empty())
 	{
 		str_set_map links;
@@ -1081,7 +1081,7 @@ void PFinderIrcBotPlugin::oaunlink(const message& msg)
 {
 	BUG_COMMAND(msg);
 
-	std::istringstream params(msg.get_user_params());
+	std::istringstream params(msg.get_user_params_cp());
 
 	str group;
 	siz_vec items;
@@ -1133,7 +1133,7 @@ void PFinderIrcBotPlugin::oaunlink(const message& msg)
 
 	if(trim(group).empty() || items.empty())
 	{
-		bot.fc_reply(msg, help(msg.get_user_cmd()));
+		bot.fc_reply(msg, help(msg.get_user_cmd_cp()));
 		return;
 	}
 
@@ -1174,19 +1174,19 @@ void PFinderIrcBotPlugin::oaunlink(const message& msg)
 
 std::istream& getmsg(std::istream& is, message& msg)
 {
-	std::getline(is, msg.from);
-	std::getline(is, msg.cmd);
-	std::getline(is, msg.to);
-	std::getline(is, msg.text);
+	std::getline(is, msg.from_cp);
+	std::getline(is, msg.cmd_cp);
+	std::getline(is, msg.to_cp);
+	std::getline(is, msg.text_cp);
 	return is;
 }
 
 std::ostream& putmsg(std::ostream& os, const message& msg)
 {
-	os << msg.from << '\n';
-	os << msg.cmd << '\n';
-	os << msg.to << '\n';
-	os << msg.text;
+	os << msg.from_cp << '\n';
+	os << msg.cmd_cp << '\n';
+	os << msg.to_cp << '\n';
+	os << msg.text_cp;
 	return os;
 }
 
@@ -1278,7 +1278,7 @@ void PFinderIrcBotPlugin::oatell(const message& msg)
 {
 	BUG_COMMAND(msg);
 
-	std::istringstream iss(msg.get_user_params());
+	std::istringstream iss(msg.get_user_params_cp());
 	str nick;
 	size_t minutes = 60;
 	iss >> nick >> minutes;
@@ -1364,7 +1364,7 @@ bool PFinderIrcBotPlugin::initialize()
 	({
 		"!oaname"
 		, "!oaname <name> Convert OA name colours."
-		, [&](const message& msg){ bot.fc_reply(msg, oa_to_IRC(msg.get_user_params().c_str())); }
+		, [&](const message& msg){ bot.fc_reply(msg, oa_to_IRC(msg.get_user_params_cp().c_str())); }
 	});
 	add
 	({
