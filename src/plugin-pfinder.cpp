@@ -78,14 +78,17 @@ const str TELL_FILE = "pfinder.tell_file";
 const str TELL_FILE_DEFAULT = "pfinder-tells.txt";
 const str SERVER_UID_FILE = "pfinder.server_uid_file";
 const str SERVER_UID_FILE_DEFAULT = "pfinder-servers.txt";
+const str STORE_FILE = "pfinder.store.file";
+const str STORE_FILE_DEFAULT = "pfinder-store.txt";
 
 const str EDIV = R"(</div>)";
 
 PFinderIrcBotPlugin::PFinderIrcBotPlugin(IrcBot& bot)
 : BasicIrcBotPlugin(bot)
-//, automsg_timer([&](const void*){ check_automsgs(); })
+, store(bot.getf(STORE_FILE, STORE_FILE_DEFAULT))
 {
 }
+
 PFinderIrcBotPlugin::~PFinderIrcBotPlugin() {}
 
 str IRC_BOLD = "\x02";
@@ -455,7 +458,7 @@ void PFinderIrcBotPlugin::cvar(const message& msg)
 
 	str skip,var;// = lowercase(msg.get_user_params());
 	siz n = 1;
-	siss iss(msg.get_user_params_cp());
+	siss iss(msg.get_user_params());
 	ios::getstring(iss, var);
 	sgl(iss, skip, '#') >> n;
 
@@ -472,7 +475,7 @@ void PFinderIrcBotPlugin::cvar(const message& msg)
 			cvars.insert(cvar);
 
 	if(cvars.empty())
-		bot.fc_reply(msg, msg.get_user_params_cp() + " did not match any cvar");
+		bot.fc_reply(msg, msg.get_user_params() + " did not match any cvar");
 	else
 	{
 		const siz size = cvars.size();
@@ -722,7 +725,7 @@ bool PFinderIrcBotPlugin::oaslist(const message& msg)
 
 	str wild;
 	siz batch = 1; // batch
-	siss iss(msg.get_user_params_cp());
+	siss iss(msg.get_user_params());
 
 	if(!(iss >> wild))
 		return bot.cmd_error(msg, prompt + "!oalist <wildcard> *(#n)");
@@ -883,7 +886,7 @@ bool PFinderIrcBotPlugin::oasname(const message& msg)
 		return false;
 
 	if(newname.empty())
-		return bot.cmd_error(msg,  prompt + bot.help(msg.get_user_cmd_cp()));
+		return bot.cmd_error(msg,  prompt + bot.help(msg.get_user_cmd()));
 
 	if(newname.size() > 6)
 		return bot.cmd_error(msg, prompt + "New name must be 6 characters or less.");
@@ -921,10 +924,10 @@ void PFinderIrcBotPlugin::oafind(const message& msg)
 
 	time_t start = std::time(0);
 
-	str handle = msg.get_user_params_cp();
+	str handle = msg.get_user_params();
 	if(trim(handle).empty())
 	{
-		bot.fc_reply(msg, help(msg.get_user_cmd_cp()));
+		bot.fc_reply(msg, help(msg.get_user_cmd()));
 		return;
 	}
 
@@ -976,11 +979,11 @@ void PFinderIrcBotPlugin::oalink(const message& msg)
 	BUG_COMMAND(msg);
 
 	str group, handle;
-	std::istringstream iss(msg.get_user_params_cp());
+	std::istringstream iss(msg.get_user_params());
 
 	if(!(iss >> group))
 	{
-		bot.fc_reply(msg, help(msg.get_user_cmd_cp()));
+		bot.fc_reply(msg, help(msg.get_user_cmd()));
 		return;
 	}
 
@@ -1012,7 +1015,7 @@ void PFinderIrcBotPlugin::oalist(const message& msg)
 {
 	BUG_COMMAND(msg);
 
-	str group = msg.get_user_params_cp();
+	str group = msg.get_user_params();
 	if(!trim(group).empty())
 	{
 		str_set_map links;
@@ -1081,7 +1084,7 @@ void PFinderIrcBotPlugin::oaunlink(const message& msg)
 {
 	BUG_COMMAND(msg);
 
-	std::istringstream params(msg.get_user_params_cp());
+	std::istringstream params(msg.get_user_params());
 
 	str group;
 	siz_vec items;
@@ -1133,7 +1136,7 @@ void PFinderIrcBotPlugin::oaunlink(const message& msg)
 
 	if(trim(group).empty() || items.empty())
 	{
-		bot.fc_reply(msg, help(msg.get_user_cmd_cp()));
+		bot.fc_reply(msg, help(msg.get_user_cmd()));
 		return;
 	}
 
@@ -1172,23 +1175,23 @@ void PFinderIrcBotPlugin::oaunlink(const message& msg)
 	bot.fc_reply(msg, "Unlinking complete.");
 }
 
-std::istream& getmsg(std::istream& is, message& msg)
-{
-	std::getline(is, msg.from_cp);
-	std::getline(is, msg.cmd_cp);
-	std::getline(is, msg.to_cp);
-	std::getline(is, msg.text_cp);
-	return is;
-}
-
-std::ostream& putmsg(std::ostream& os, const message& msg)
-{
-	os << msg.from_cp << '\n';
-	os << msg.cmd_cp << '\n';
-	os << msg.to_cp << '\n';
-	os << msg.text_cp;
-	return os;
-}
+//std::istream& getmsg(std::istream& is, message& msg)
+//{
+//	std::getline(is, msg.from_cp);
+//	std::getline(is, msg.cmd_cp);
+//	std::getline(is, msg.to_cp);
+//	std::getline(is, msg.text_cp);
+//	return is;
+//}
+//
+//std::ostream& putmsg(std::ostream& os, const message& msg)
+//{
+//	os << msg.from_cp << '\n';
+//	os << msg.cmd_cp << '\n';
+//	os << msg.to_cp << '\n';
+//	os << msg.text_cp;
+//	return os;
+//}
 
 struct tell
 {
@@ -1198,23 +1201,26 @@ struct tell
 	size_t minutes;
 };
 
-std::istream& gettell(std::istream& is, tell& t)
-{
-	is >> t.from >> std::ws;
-	getmsg(is, t.msg);
-	std::getline(is, t.nick);
-	is >> t.minutes >> std::ws;
-	return is;
-}
-
-std::ostream& puttell(std::ostream& os, const tell& t)
-{
-	os << t.from << '\n';
-	putmsg(os, t.msg) << '\n';
-	os << t.nick << '\n';
-	os << t.minutes;
-	return os;
-}
+//std::istream& gettell(std::istream& is, tell& t)
+//{
+//	is >> t.from >> std::ws;
+////	getmsg(is, t.msg);
+//	is >> t.msg;
+//	std::getline(is, t.nick);
+//	is >> t.minutes >> std::ws;
+//	return is;
+//}
+//
+//std::ostream& puttell(std::ostream& os, const tell& t)
+//{
+//	os << t.from << '\n';
+////	putmsg(os, t.msg) << '\n';
+//	os << t.msg << '\n';
+//	os << t.nick << '\n';
+//	os << t.minutes;
+////	store.add
+//	return os;
+//}
 
 static bool done = false;
 
@@ -1234,21 +1240,26 @@ void tell_runner(std::function<void()> func)
 void PFinderIrcBotPlugin::check_tell()
 {
 	//bug_func();
-	std::ifstream ifs(bot.getf(TELL_FILE, TELL_FILE_DEFAULT));
-	std::ostringstream oss; // next list
-	if(ifs)
-	{
+//	std::ifstream ifs(bot.getf(TELL_FILE, TELL_FILE_DEFAULT));
+//	std::ostringstream oss; // next list
+//	if(ifs)
+//	{
 		tell t;
-		while(gettell(ifs, t))
+		str_vec tells = store.get_vec("tells");
+		for(str_vec_itr i = tells.begin(); i != tells.end();)
 		{
+			siss iss(*i);
+			if(!(iss >> t.from >> std::ws >> t.msg >> t.nick >> t.minutes))
+			{
+				log("ERROR: Bad tell record");
+				++i;
+				continue;
+			}
 			size_t diff = (time(0) - t.from) / 60;
 			if(diff < t.minutes)
 			{
 				std::vector<str> found = oafind(t.nick);
-				if(found.empty())
-					puttell(oss, t) << '\n';
-
-				else
+				if(!found.empty())
 				{
 					const size_t max_matches = bot.get<size_t>("maxlines", 6);
 					if(found.size() > max_matches)
@@ -1261,38 +1272,50 @@ void PFinderIrcBotPlugin::check_tell()
 
 					for(const str& s: found)
 						bot.fc_reply_pm(t.msg, s);
+					i = tells.erase(i);
 				}
+				else
+					++i;
 			}
 			else
 			{
 				bot.fc_reply_pm(t.msg, IRC_COLOR + IRC_Red + "tell: " + oa_handle_to_irc(t.nick) + " has expired.");
+				i = tells.erase(i);
 			}
 		}
-	}
-	ifs.close();
-	std::ofstream ofs(bot.getf(TELL_FILE, TELL_FILE_DEFAULT), std::ios::trunc);
-	if(ofs) ofs << oss.str();
+		store.clear("tells");
+		store.set_from("tells", tells);
+//	}
+//	ifs.close();
+//	std::ofstream ofs(bot.getf(TELL_FILE, TELL_FILE_DEFAULT), std::ios::trunc);
+//	if(ofs) ofs << oss.str();
 }
 
 void PFinderIrcBotPlugin::oatell(const message& msg)
 {
 	BUG_COMMAND(msg);
 
-	std::istringstream iss(msg.get_user_params_cp());
+	std::istringstream iss(msg.get_user_params());
 	str nick;
 	size_t minutes = 60;
 	iss >> nick >> minutes;
 
 	if(!trim(nick).empty())
 	{
-		std::ofstream ofs(bot.getf(TELL_FILE, TELL_FILE_DEFAULT), std::ios::app);
-		if(ofs)
-		{
-			ofs << std::time(0) << '\n';
-			putmsg(ofs, msg) << '\n';
-			ofs << nick << '\n';
-			ofs << minutes << '\n';
-		}
+		soss oss;
+		oss << std::time(0);
+		oss << " " << msg;
+		oss << " " << nick;
+		oss << " " << minutes;
+		store.add("tells", oss.str());
+//		std::ofstream ofs(bot.getf(TELL_FILE, TELL_FILE_DEFAULT), std::ios::app);
+//		if(ofs)
+//		{
+//			ofs << std::time(0) << '\n';
+//			putmsg(ofs, msg) << '\n';
+//			ofs << nick << '\n';
+//			ofs << minutes << '\n';
+//		}
 
 		bot.fc_reply(msg, nick + " added to tell list.");
 	}
@@ -1364,7 +1387,7 @@ bool PFinderIrcBotPlugin::initialize()
 	({
 		"!oaname"
 		, "!oaname <name> Convert OA name colours."
-		, [&](const message& msg){ bot.fc_reply(msg, oa_to_IRC(msg.get_user_params_cp().c_str())); }
+		, [&](const message& msg){ bot.fc_reply(msg, oa_to_IRC(msg.get_user_params().c_str())); }
 	});
 	add
 	({

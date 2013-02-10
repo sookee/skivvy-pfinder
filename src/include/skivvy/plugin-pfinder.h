@@ -34,6 +34,7 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include <skivvy/ircbot.h>
 
 #include <skivvy/network.h>
+#include <skivvy/store.h>
 
 #include <chrono>
 
@@ -53,7 +54,7 @@ class PFinderIrcBotPlugin
 , public IrcBotRPCService
 {
 private:
-
+	BackupStore store;
 	struct player
 	{
 		str ping;
