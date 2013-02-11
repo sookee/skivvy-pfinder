@@ -192,7 +192,7 @@ private:
 	void oalist(const message& msg);
 	void oatell(const message& msg);
 	bool oaserver(const message& msg);
-	bool oaslist(const message& msg);
+	bool oasfind(const message& msg);
 	bool oasinfo(const message& msg);
 	bool oasname(const message& msg);
 

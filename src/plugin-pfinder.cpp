@@ -482,9 +482,9 @@ void PFinderIrcBotPlugin::cvar(const message& msg)
 		const siz start = (n - 1) * 10;
 		const siz end = (start + 10) > size ? size : (start + 10);
 
-		bot.fc_reply(msg, prompt + "Listing #" + std::to_string(n)
+		bot.fc_reply(msg, prompt + IRC_UNDERLINE + IRC_BOLD + "Listing #" + std::to_string(n)
 			+ " of " + std::to_string((size + 9)/10)
-			+ " (from " + std::to_string(start + 1) + " to "
+			+ IRC_NORMAL + " (from " + std::to_string(start + 1) + " to "
 			+ std::to_string(end) + " of " + std::to_string(size) + ")");
 
 		siz i = 0;
@@ -495,7 +495,7 @@ void PFinderIrcBotPlugin::cvar(const message& msg)
 			if(i > end) // end of batch
 				break;
 
-			bot.fc_reply(msg, prompt + cvar.name + ": " + cvar.desc);
+			bot.fc_reply(msg, prompt + IRC_BOLD + cvar.name + IRC_NORMAL + ": " + cvar.desc);
 		}
 	}
 }
@@ -714,7 +714,7 @@ bool PFinderIrcBotPlugin::write_servers(const message& /*msg*/, const oasdata_ma
 	return true;
 }
 
-bool PFinderIrcBotPlugin::oaslist(const message& msg)
+bool PFinderIrcBotPlugin::oasfind(const message& msg)
 {
 	BUG_COMMAND(msg);
 
@@ -1392,8 +1392,14 @@ bool PFinderIrcBotPlugin::initialize()
 	add
 	({
 		"!oaslist"
-		, "!oaslist <wildcard> ?(#n) - List ,batch number n, the servers matching <wildcard>."
-		, [&](const message& msg){ oaslist(msg); }
+		, "!oaslist DEPRECATED, please use !oasfind."
+		, [&](const message& msg){ oasfind(msg); }
+	});
+	add
+	({
+		"!oasfind"
+		, "!oasfind <wildcard> ?(#n) - Find ,batch number n, the servers matching <wildcard>."
+		, [&](const message& msg){ oasfind(msg); }
 	});
 	add
 	({
