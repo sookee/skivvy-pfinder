@@ -1099,6 +1099,8 @@ void PFinderIrcBotPlugin::oaunlink(const message& msg)
 //		while(params >> n)
 //			items.push_back(n);
 
+	// TODO: make this use utils.h parse_range()
+
 	str range;
 	while(sgl(params, range, ','))
 	{
