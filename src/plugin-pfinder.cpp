@@ -904,7 +904,7 @@ bool PFinderIrcBotPlugin::oasname(const message& msg)
 
 		oasd.name = newname;
 		if(write_servers(msg, oasds, uid))
-			bot.fc_reply(msg, prompt + "Name has been chaned.");
+			bot.fc_reply(msg, prompt + "Name has been changed.");
 		else
 			log("ERROR: Problem changing name from: " << id << " to " << newname);
 		break;
