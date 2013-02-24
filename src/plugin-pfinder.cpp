@@ -80,6 +80,8 @@ const str SERVER_UID_FILE = "pfinder.server_uid_file";
 const str SERVER_UID_FILE_DEFAULT = "pfinder-servers.txt";
 const str STORE_FILE = "pfinder.store.file";
 const str STORE_FILE_DEFAULT = "pfinder-store.txt";
+const str OASNAME_WIDTH = "pfinder.oasname.width";
+const siz OASNAME_WIDTH_DEFAULT = 8;
 
 const str EDIV = R"(</div>)";
 
@@ -779,8 +781,10 @@ bool PFinderIrcBotPlugin::oasfind(const message& msg)
 		if(i > end) // end of batch
 			break;
 
+		siz width = bot.get(OASNAME_WIDTH, OASNAME_WIDTH_DEFAULT);
+
 		str id = oasd.name.empty() ? std::to_string(oasd.uid) : oasd.name;
-		str space(6 - id.length(), ' ');
+		str space(width - id.length(), ' ');
 		bot.fc_reply(msg, prompt + IRC_BOLD + blkwht + "[" + space + id + "] "
 			+ IRC_NORMAL + oa_handle_to_irc(oasd.sv_hostname));
 
@@ -854,11 +858,13 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 
 		std::sort(sps.begin(), sps.end(), [](const stpl& sp1, const stpl& sp2) { return sp1.frags >= sp2.frags; });
 
-		siz header_size = remove_oa_codes(oasd.sv_hostname).size();
-		if(header_size - 6 > max)
-			max = header_size - 6;
+		siz width = bot.get(OASNAME_WIDTH, OASNAME_WIDTH_DEFAULT);
 
-		bot.fc_reply(msg, prompt + oa_handle_to_irc(oasd.sv_hostname + str(max - header_size + 6, ' ')));
+		siz header_size = remove_oa_codes(oasd.sv_hostname).size();
+		if(header_size - width > max)
+			max = header_size - width;
+
+		bot.fc_reply(msg, prompt + oa_handle_to_irc(oasd.sv_hostname + str(max - header_size + width, ' ')));
 
 		for(const stpl& sp: sps)
 		{
@@ -888,8 +894,9 @@ bool PFinderIrcBotPlugin::oasname(const message& msg)
 	if(newname.empty())
 		return bot.cmd_error(msg,  prompt + bot.help(msg.get_user_cmd()));
 
-	if(newname.size() > 6)
-		return bot.cmd_error(msg, prompt + "New name must be 6 characters or less.");
+	siz width = bot.get(OASNAME_WIDTH, OASNAME_WIDTH_DEFAULT);
+	if(newname.size() > width)
+		return bot.cmd_error(msg, prompt + "New name must be " + std::to_string(width) + " characters or less.");
 
 	siz uid;
 	std::map<str, oasdata> oasds; // ip:port -> oasdata;
@@ -904,7 +911,7 @@ bool PFinderIrcBotPlugin::oasname(const message& msg)
 
 		oasd.name = newname;
 		if(write_servers(msg, oasds, uid))
-			bot.fc_reply(msg, prompt + "Name has been chaned.");
+			bot.fc_reply(msg, prompt + "Name has been changed.");
 		else
 			log("ERROR: Problem changing name from: " << id << " to " << newname);
 		break;
@@ -1098,6 +1105,8 @@ void PFinderIrcBotPlugin::oaunlink(const message& msg)
 //	if(params >> group)
 //		while(params >> n)
 //			items.push_back(n);
+
+	// TODO: make this use utils.h parse_range()
 
 	str range;
 	while(sgl(params, range, ','))
