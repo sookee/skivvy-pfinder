@@ -807,8 +807,10 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 
 	const str blkwht = IRC_COLOR + IRC_Black + "," + IRC_White;
 
-	static const str prompt = IRC_BOLD + IRC_COLOR + IRC_Teal + "oasinfo"
-		+ ":" + blkwht + " " + IRC_NORMAL;
+//	static const str prompt = IRC_BOLD + IRC_COLOR + IRC_Teal + "oasinfo"
+//		+ ":" + blkwht + " " + IRC_NORMAL;
+
+	const str prompt = REPLY_PROMPT;
 
 	oasdata oasd;
 
@@ -857,11 +859,11 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 			sps.push_back(sp);
 		}
 
-		sp.oaname += "^7"; // Ensure end color to fix backgrountfix bleeding after name
+		sp.oaname += "^7"; // Ensure end color to fix backgrount bleeding after name
 
 		std::sort(sps.begin(), sps.end(), [](const stpl& sp1, const stpl& sp2) { return sp1.frags >= sp2.frags; });
 
-		siz width = bot.get(OASNAME_WIDTH, OASNAME_WIDTH_DEFAULT);
+		siz width = 6;
 
 		siz header_size = remove_oa_codes(oasd.sv_hostname).size();
 		if(header_size - width > max)
