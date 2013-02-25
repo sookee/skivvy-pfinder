@@ -55,94 +55,70 @@ using namespace skivvy;
 using namespace skivvy::utils;
 using namespace skivvy::types;
 
+/**
+ * IPv4 IPv6 agnostic OOB (out Of Band) comms
+ * @param cmd
+ * @param packets Returned packets
+ * @param host Host to connect to
+ * @param port Port to connect on
+ * @param wait Timeout duration in milliseconds
+ * @return false if failed to connect/send or receive else true
+ */
 bool aocom(const str& cmd, str_vec& packets, const str& host, int port
 	, siz wait = TIMEOUT)
 {
-//	bug_func();
-//	bug_var(cmd);
-//	bug_var(host);
-//	bug_var(port);
-	// One mutex per server:port to ensure that all threads
-	// accessing the same server:port pause for a minimum time
-	// between calls to avoid flood protection.
-	static std::map<str, std::unique_ptr<std::mutex>> mtxs;
+	addrinfo hints;
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_UNSPEC; // AF_INET or AF_INET6
+	hints.ai_socktype = SOCK_DGRAM;
 
-	int cs = socket(PF_INET, SOCK_DGRAM, 0);
-	int cs_flags = fcntl(cs, F_GETFL, 0);
-
-	if(cs <= 0)
+	addrinfo* res;
+	if(int status = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &res) != 0)
 	{
-		log(strerror(errno));
+		log(gai_strerror(status));
 		return false;
 	}
-
-	sockaddr_in sin;
-	hostent* he = gethostbyname(host.c_str());
-	std::copy(he->h_addr, he->h_addr + he->h_length
-		, reinterpret_cast<char*>(&sin.sin_addr.s_addr));
-	sin.sin_family = AF_INET;
-	sin.sin_port = htons(port);
-
-//	bug("Setting non-blocking");
-	fcntl(cs, F_SETFL, cs_flags | O_NONBLOCK);
-
-//	bug("connecting to : " << host << ":" << port);
 
 	st_time_point timeout = st_clk::now() + std::chrono::milliseconds(wait);
 
-	int n = 0;
-	while((n = connect(cs, (struct sockaddr *) &sin, sizeof(sin))) < 0 && errno == EINPROGRESS)
+	// try to connect to each
+	int cs;
+	addrinfo* p;
+	for(p = res; p; p = p->ai_next)
 	{
-		if(st_clk::now() > timeout)
-		{
-			log("socket timed out connecting to: " << host << ":" << port);
-			return false;
-		}
-		std::this_thread::yield();
+		if((cs = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
+			continue;
+		if(!connect(cs, p->ai_addr, p->ai_addrlen))
+			break;
+		::close(cs);
 	}
 
-	if(n < 0)
+	freeaddrinfo(res);
+
+	if(!p)
 	{
-		log(strerror(errno) << ": " << host << ":" << port);
+		log("aocom: failed to connect: " << host << ":" << port);
 		return false;
 	}
 
-//	bug("Non-blocking off");
-	fcntl(cs, F_SETFL, cs_flags);
-
-
-//	bug("Setting non-blocking");
-//	fcntl(cs, F_SETFL, O_NONBLOCK);
-
-//	const str key = host + ":" + std::to_string(port);
-
-//	if(!mtxs[key].get())
-//		mtxs[key].reset(new std::mutex);
-
-	// keep out all threads for the same server:port until the minimum time
-	// has elapsed
-//	lock_guard lock(*mtxs[key]);
-//	st_time_point pause = st_clk::now() + std::chrono::milliseconds(1000);
+	// cs good
 
 	const str msg = "\xFF\xFF\xFF\xFF" + cmd;
 
-//	bug("about to send...");
+	int n = 0;
 	if((n = send(cs, msg.c_str(), msg.size(), 0)) < 0 || n < (int)msg.size())
 	{
 		log("cs send: " << strerror(errno));
 		return false;
 	}
-//	bug("done!");
 
 	packets.clear();
 
 	char buf[2048];
 
-//	bug("about to recv...");
 	n = sizeof(buf);
 	while(n == sizeof(buf))
 	{
-		timeout = st_clk::now() + std::chrono::milliseconds(wait);
 		while((n = recv(cs, buf, sizeof(buf), MSG_DONTWAIT)) ==  -1 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
 		{
 			if(st_clk::now() > timeout)
@@ -150,20 +126,16 @@ bool aocom(const str& cmd, str_vec& packets, const str& host, int port
 				log("socket timed out connecting to: " << host << ":" << port);
 				return false;
 			}
-			std::this_thread::yield();
+//			std::this_thread::yield();
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
-	//		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		if(n < 0)
 			log("cs recv: " << strerror(errno));
 		if(n > 0)
 			packets.push_back(str(buf, n));
 	}
-//	bug("done!");
-//	bug(packets.size());
 
 	close(cs);
-
-//	std::this_thread::sleep_until(pause);
 
 	return true;
 }
@@ -248,7 +220,6 @@ bool getstatus(const str& host, siz port, str& status)
 		}
 
 		status.append(packet.substr(header.size()));
-//		status.assign(packet.substr(header.size()));
 	}
 
 	return true;

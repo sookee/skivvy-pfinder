@@ -47,6 +47,7 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include <skivvy/stl.h>
 #include <skivvy/str.h>
 #include <skivvy/types.h>
+#include <skivvy/utils.h>
 #include <skivvy/ircbot.h>
 #include <skivvy/logrep.h>
 #include <skivvy/network.h>
@@ -722,8 +723,10 @@ bool PFinderIrcBotPlugin::oasfind(const message& msg)
 
 	const str blkwht = IRC_COLOR + IRC_Black + "," + IRC_White;
 
-	static const str prompt = IRC_BOLD + IRC_COLOR + IRC_Green + "oaslist"
-		+ ":" + blkwht + " " + IRC_NORMAL;
+//	static const str prompt = IRC_BOLD + IRC_COLOR + IRC_Green + "oaslist"
+//		+ ":" + blkwht + " " + IRC_NORMAL;
+
+	const str prompt = REPLY_PROMPT;
 
 	str wild;
 	siz batch = 1; // batch
