@@ -42,10 +42,11 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include <ctime>
 #include <chrono>
 
+#include <sookee/str.h>
+
 #include <skivvy/ios.h>
 #include <skivvy/irc.h>
 #include <skivvy/stl.h>
-#include <skivvy/str.h>
 #include <skivvy/types.h>
 #include <skivvy/ircbot.h>
 #include <skivvy/logrep.h>
@@ -64,7 +65,7 @@ using namespace skivvy::irc;
 using namespace skivvy::oacom;
 using namespace skivvy::types;
 using namespace skivvy::utils;
-using namespace skivvy::string;
+using namespace sookee::string;
 using namespace skivvy::ircbot;
 
 const str MAX_MATCHES = "pfinder.max_matches";
@@ -195,7 +196,7 @@ bool PFinderIrcBotPlugin::lookup_players(const str& search, std::vector<str>& ha
 	while(std::getline(ifs >> key, val))
 	{
 		trim(val);
-		if(!val.empty() && (lowercase(search) == "all" || lowercase(key) == lowercase(search)))
+		if(!val.empty() && (lower_copy(search) == "all" || lower_copy(key) == lower_copy(search)))
 			players.insert(val);
 	}
 	handles.assign(players.begin(), players.end());
@@ -210,8 +211,8 @@ bool PFinderIrcBotPlugin::lookup_players(const str& search, std::vector<str>& ha
 
 bool PFinderIrcBotPlugin::match_player(bool subst, const str& name1, const str& name2)
 {
-	if(subst) return lowercase(name1) == lowercase(name2);
-	return lowercase(name1).find(lowercase(name2)) != str::npos;
+	if(subst) return lower_copy(name1) == lower_copy(name2);
+	return lower_copy(name1).find(lower_copy(name2)) != str::npos;
 }
 
 std::mutex uidfile_mtx;
@@ -459,7 +460,7 @@ void PFinderIrcBotPlugin::cvar(const message& msg)
 
 	// !cvar <wild> #n
 
-	str skip,var;// = lowercase(msg.get_user_params());
+	str skip,var;// = lower_copy(msg.get_user_params());
 	siz n = 1;
 	siss iss(msg.get_user_params());
 	ios::getstring(iss, var);
@@ -474,7 +475,7 @@ void PFinderIrcBotPlugin::cvar(const message& msg)
 
 	cvar_t cvar;
 	while(ifs >> cvar) // fixed? {bug #25}
-		if(bot.wild_match("*" + lowercase(var) + "*", lowercase(cvar.name)))
+		if(bot.wild_match("*" + lower_copy(var) + "*", lower_copy(cvar.name)))
 			cvars.insert(cvar);
 
 	if(cvars.empty())
@@ -750,7 +751,7 @@ bool PFinderIrcBotPlugin::oasfind(const message& msg)
 	for(const std::pair<const str, oasdata>& oasdp: oasds)
 	{
 		const str hostname = remove_oa_codes(oasdp.second.sv_hostname);
-		if(bot.wild_match("*" + lowercase(wild) + "*", lowercase(hostname)))
+		if(bot.wild_match("*" + lower_copy(wild) + "*", lower_copy(hostname)))
 			oasdv.push_back(oasdp.second);
 	}
 
@@ -1048,7 +1049,7 @@ void PFinderIrcBotPlugin::oalist(const message& msg)
 		str delim;
 		std::ostringstream oss;
 
-		if(lowercase(group) == "all")
+		if(lower_copy(group) == "all")
 		{
 			// list groups
 			for(const str_set_pair& link: links)
