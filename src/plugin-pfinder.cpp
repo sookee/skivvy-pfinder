@@ -49,6 +49,7 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include <skivvy/types.h>
 #include <skivvy/ircbot.h>
 #include <skivvy/logrep.h>
+#include <skivvy/utils.h>
 #include <skivvy/network.h>
 #include <skivvy/openarena.h>
 
@@ -820,20 +821,13 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 		if(oasd.name != id && std::to_string(oasd.uid) != id)
 			continue;
 
-		str status;
-		if(!getstatus(oasd.host, oasd.port, status))
+		str_map cvars;
+		str_vec players;
+		if(!getstatus(oasd.host, oasd.port, cvars, players))
 		{
 			bot.fc_reply(msg, prompt + "Server not answering.");
 			return false;
 		}
-
-		bug_var(status);
-
-		str player;
-		str info;
-		siss iss(status);
-		sgl(iss, info);
-		bug_var(info);
 
 		struct stpl
 		{
@@ -845,7 +839,7 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 		siz max = 0;
 		stpl sp;
 		std::vector<stpl> sps;
-		while(sgl(iss, player))
+		for(const str& player: players)
 		{
 			if(!sgl(sgl(siss(player) >> sp.frags >> sp.ping >> std::ws, sp.oaname, '"'), sp.oaname, '"'))
 				continue;
@@ -858,13 +852,16 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 
 		std::sort(sps.begin(), sps.end(), [](const stpl& sp1, const stpl& sp2) { return sp1.frags >= sp2.frags; });
 
-		siz width = bot.get(OASNAME_WIDTH, OASNAME_WIDTH_DEFAULT);
+		siz width = 6;
 
-		siz header_size = remove_oa_codes(oasd.sv_hostname).size();
+		str header = oasd.sv_hostname + " " + "^7(^3" + cvars["mapname"] + "^7)"
+			+ " " + "^7[^2" + std::to_string(sps.size()) + "^3/^2" + cvars["g_maxGameClients"] + "^7]";
+
+		siz header_size = remove_oa_codes(header).size();
 		if(header_size - width > max)
 			max = header_size - width;
 
-		bot.fc_reply(msg, prompt + oa_handle_to_irc(oasd.sv_hostname + str(max - header_size + width, ' ')));
+		bot.fc_reply(msg, prompt + oa_handle_to_irc(header + str(max - header_size + width, ' ')));
 
 		for(const stpl& sp: sps)
 		{
