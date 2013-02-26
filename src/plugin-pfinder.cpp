@@ -799,9 +799,12 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 	BUG_COMMAND(msg);
 	// !oasinfo uid|name
 
-	str id;
-	if(!bot.extract_params(msg, {&id}, true))
-		return false;
+	str id, flag;
+	if(!bot.extract_params(msg, {&id, &flag}, false))
+		if(!bot.extract_params(msg, {&id}, true))
+			return false;
+
+	bool ignore_bots = !(flag == "+bots");
 
 	const str blkwht = IRC_COLOR + IRC_Black + "," + IRC_White;
 
@@ -843,10 +846,16 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 		{
 			if(!sgl(sgl(siss(player) >> sp.frags >> sp.ping >> std::ws, sp.oaname, '"'), sp.oaname, '"'))
 				continue;
+			if(!sp.ping && ignore_bots)
+				continue;
 			if((sp.size = remove_oa_codes(sp.oaname).size()) > max)
 				max = sp.size;
 			sps.push_back(sp);
 		}
+
+		str mapname = cvars["mapname"];
+		str maxplayers = cvars["g_maxGameClients"];
+		str numplayers = std::to_string(sps.size());
 
 		sp.oaname += "^7"; // Ensure end color to fix backgrountfix bleeding after name
 
@@ -854,8 +863,8 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 
 		siz width = 6;
 
-		str header = oasd.sv_hostname + " " + "^7(^3" + cvars["mapname"] + "^7)"
-			+ " " + "^7[^2" + std::to_string(sps.size()) + "^3/^2" + cvars["g_maxGameClients"] + "^7]";
+		str header = oasd.sv_hostname + " " + "^7(^3" + mapname + "^7)"
+			+ " " + "^7[^2" + numplayers + "^3/^2" + maxplayers + "^7]";
 
 		siz header_size = remove_oa_codes(header).size();
 		if(header_size - width > max)
