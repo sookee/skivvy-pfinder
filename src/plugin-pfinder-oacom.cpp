@@ -42,6 +42,9 @@ http://www.gnu.org/licenses/gpl-2.0.html
 
 #include <sstream>
 
+#include <sookee/log.h>
+#include <sookee/bug.h>
+
 #include <skivvy/logrep.h>
 #include <skivvy/plugin-pfinder-oacom.h>
 #include <skivvy/types.h>
@@ -54,6 +57,8 @@ namespace skivvy { namespace oacom {
 using namespace skivvy;
 using namespace skivvy::utils;
 using namespace skivvy::types;
+using namespace sookee::log;
+using namespace sookee::bug;
 
 /**
  * IPv4 IPv6 agnostic OOB (out Of Band) comms
@@ -188,6 +193,32 @@ bool getservers(oa_server_vec& servers)
 			servers.push_back({oss.str(), siz(srv[5] << 8) | srv[6]});
 		}
 	}
+
+	return true;
+}
+
+bool getstatus(const str& host, siz port, str_map& cvars, str_vec& players)
+{
+	str status;
+	if(!getstatus(host, port, status))
+		return false;
+
+	str line;
+	siss iss(status);
+	if(sgl(iss, line) && !line.empty())
+	{
+		str key, val;
+		siss iss(line.substr(1)); // skip initial '\\';
+		while(sgl(sgl(iss, key, '\\'), val, '\\'))
+		{
+			bug_var(key);
+			bug_var(val);
+			cvars[key] = val;
+		}
+	}
+
+	while(sgl(iss, line))
+		players.push_back(line);
 
 	return true;
 }

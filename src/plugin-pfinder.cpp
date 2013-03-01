@@ -42,14 +42,16 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include <ctime>
 #include <chrono>
 
+#include <sookee/str.h>
+
 #include <skivvy/ios.h>
 #include <skivvy/irc.h>
 #include <skivvy/stl.h>
-#include <skivvy/str.h>
 #include <skivvy/types.h>
 #include <skivvy/utils.h>
 #include <skivvy/ircbot.h>
 #include <skivvy/logrep.h>
+#include <skivvy/utils.h>
 #include <skivvy/network.h>
 #include <skivvy/openarena.h>
 
@@ -64,7 +66,7 @@ using namespace skivvy::irc;
 using namespace skivvy::oacom;
 using namespace skivvy::types;
 using namespace skivvy::utils;
-using namespace skivvy::string;
+using namespace sookee::string;
 using namespace skivvy::ircbot;
 
 const str MAX_MATCHES = "pfinder.max_matches";
@@ -195,7 +197,7 @@ bool PFinderIrcBotPlugin::lookup_players(const str& search, std::vector<str>& ha
 	while(std::getline(ifs >> key, val))
 	{
 		trim(val);
-		if(!val.empty() && (lowercase(search) == "all" || lowercase(key) == lowercase(search)))
+		if(!val.empty() && (lower_copy(search) == "all" || lower_copy(key) == lower_copy(search)))
 			players.insert(val);
 	}
 	handles.assign(players.begin(), players.end());
@@ -210,8 +212,8 @@ bool PFinderIrcBotPlugin::lookup_players(const str& search, std::vector<str>& ha
 
 bool PFinderIrcBotPlugin::match_player(bool subst, const str& name1, const str& name2)
 {
-	if(subst) return lowercase(name1) == lowercase(name2);
-	return lowercase(name1).find(lowercase(name2)) != str::npos;
+	if(subst) return lower_copy(name1) == lower_copy(name2);
+	return lower_copy(name1).find(lower_copy(name2)) != str::npos;
 }
 
 std::mutex uidfile_mtx;
@@ -459,7 +461,7 @@ void PFinderIrcBotPlugin::cvar(const message& msg)
 
 	// !cvar <wild> #n
 
-	str skip,var;// = lowercase(msg.get_user_params());
+	str skip,var;// = lower_copy(msg.get_user_params());
 	siz n = 1;
 	siss iss(msg.get_user_params());
 	ios::getstring(iss, var);
@@ -474,7 +476,7 @@ void PFinderIrcBotPlugin::cvar(const message& msg)
 
 	cvar_t cvar;
 	while(ifs >> cvar) // fixed? {bug #25}
-		if(bot.wild_match("*" + lowercase(var) + "*", lowercase(cvar.name)))
+		if(bot.wild_match("*" + lower_copy(var) + "*", lower_copy(cvar.name)))
 			cvars.insert(cvar);
 
 	if(cvars.empty())
@@ -752,7 +754,7 @@ bool PFinderIrcBotPlugin::oasfind(const message& msg)
 	for(const std::pair<const str, oasdata>& oasdp: oasds)
 	{
 		const str hostname = remove_oa_codes(oasdp.second.sv_hostname);
-		if(bot.wild_match("*" + lowercase(wild) + "*", lowercase(hostname)))
+		if(bot.wild_match("*" + lower_copy(wild) + "*", lower_copy(hostname)))
 			oasdv.push_back(oasdp.second);
 	}
 
@@ -801,9 +803,12 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 	BUG_COMMAND(msg);
 	// !oasinfo uid|name
 
-	str id;
-	if(!bot.extract_params(msg, {&id}, true))
-		return false;
+	str id, flag;
+	if(!bot.extract_params(msg, {&id, &flag}, false))
+		if(!bot.extract_params(msg, {&id}, true))
+			return false;
+
+	bool ignore_bots = !(flag == "+bots");
 
 	const str blkwht = IRC_COLOR + IRC_Black + "," + IRC_White;
 
@@ -825,20 +830,13 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 		if(oasd.name != id && std::to_string(oasd.uid) != id)
 			continue;
 
-		str status;
-		if(!getstatus(oasd.host, oasd.port, status))
+		str_map cvars;
+		str_vec players;
+		if(!getstatus(oasd.host, oasd.port, cvars, players))
 		{
 			bot.fc_reply(msg, prompt + "Server not answering.");
 			return false;
 		}
-
-		bug_var(status);
-
-		str player;
-		str info;
-		siss iss(status);
-		sgl(iss, info);
-		bug_var(info);
 
 		struct stpl
 		{
@@ -850,26 +848,35 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 		siz max = 0;
 		stpl sp;
 		std::vector<stpl> sps;
-		while(sgl(iss, player))
+		for(const str& player: players)
 		{
 			if(!sgl(sgl(siss(player) >> sp.frags >> sp.ping >> std::ws, sp.oaname, '"'), sp.oaname, '"'))
+				continue;
+			if(!sp.ping && ignore_bots)
 				continue;
 			if((sp.size = remove_oa_codes(sp.oaname).size()) > max)
 				max = sp.size;
 			sps.push_back(sp);
 		}
 
-		sp.oaname += "^7"; // Ensure end color to fix backgrount bleeding after name
+		str mapname = cvars["mapname"];
+		str maxplayers = cvars["g_maxGameClients"];
+		str numplayers = std::to_string(sps.size());
+
+		sp.oaname += "^7"; // Ensure end color to fix backgrountfix bleeding after name
 
 		std::sort(sps.begin(), sps.end(), [](const stpl& sp1, const stpl& sp2) { return sp1.frags >= sp2.frags; });
 
 		siz width = 6;
 
-		siz header_size = remove_oa_codes(oasd.sv_hostname).size();
+		str header = oasd.sv_hostname + " " + "^7(^3" + mapname + "^7)"
+			+ " " + "^7[^2" + numplayers + "^3/^2" + maxplayers + "^7]";
+
+		siz header_size = remove_oa_codes(header).size();
 		if(header_size - width > max)
 			max = header_size - width;
 
-		bot.fc_reply(msg, prompt + oa_handle_to_irc(oasd.sv_hostname + str(max - header_size + width, ' ')));
+		bot.fc_reply(msg, prompt + oa_handle_to_irc(header + str(max - header_size + width, ' ')));
 
 		for(const stpl& sp: sps)
 		{
@@ -1047,7 +1054,7 @@ void PFinderIrcBotPlugin::oalist(const message& msg)
 		str delim;
 		std::ostringstream oss;
 
-		if(lowercase(group) == "all")
+		if(lower_copy(group) == "all")
 		{
 			// list groups
 			for(const str_set_pair& link: links)

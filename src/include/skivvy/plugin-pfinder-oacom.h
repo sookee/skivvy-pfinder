@@ -49,6 +49,7 @@ typedef std::vector<oa_server_t> oa_server_vec;
 
 bool getservers(oa_server_vec& servers);
 bool getstatus(const str& host, siz port, str& status);
+bool getstatus(const str& host, siz port, str_map& cvars, str_vec& players);
 
 }} // skivvy::oacom
 
