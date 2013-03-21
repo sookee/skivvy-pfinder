@@ -157,7 +157,7 @@ bool getservers(oa_server_vec& servers)
 
 	const str header = "\xFF\xFF\xFF\xFFgetserversResponse";
 
-	bug_var(header.size());
+//	bug_var(header.size());
 
 	if(packets.empty())
 	{
@@ -167,7 +167,7 @@ bool getservers(oa_server_vec& servers)
 
 	for(const str& packet: packets)
 	{
-		bug_var(packet.size());
+//		bug_var(packet.size());
 
 		if(packet.find(header) != 0)
 		{
@@ -211,8 +211,8 @@ bool getstatus(const str& host, siz port, str_map& cvars, str_vec& players)
 		siss iss(line.substr(1)); // skip initial '\\';
 		while(sgl(sgl(iss, key, '\\'), val, '\\'))
 		{
-			bug_var(key);
-			bug_var(val);
+//			bug_var(key);
+//			bug_var(val);
 			cvars[key] = val;
 		}
 	}

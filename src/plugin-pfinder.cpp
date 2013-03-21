@@ -734,7 +734,7 @@ bool PFinderIrcBotPlugin::oasfind(const message& msg)
 	siz batch = 1; // batch
 	siss iss(msg.get_user_params());
 
-	if(!(iss >> wild))
+	if(!ios::getstring(iss, wild))
 		return bot.cmd_error(msg, prompt + "!oalist <wildcard> *(#n)");
 
 	bug_var(wild);
@@ -801,7 +801,7 @@ bool PFinderIrcBotPlugin::oasfind(const message& msg)
 bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 {
 	BUG_COMMAND(msg);
-	// !oasinfo uid|name
+	// !oasinfo uid|name|ip?(:port)
 
 	str id, flag;
 	if(!bot.extract_params(msg, {&id, &flag}, false))
@@ -1401,8 +1401,8 @@ bool PFinderIrcBotPlugin::initialize()
 	add
 	({
 		"!oaserver"
-		, "!oaserver DEPRECATED, use !oaslist & !oasinfo."
-		, [&](const message& msg){ bot.fc_reply(msg, "Please use !oaslist & !oasinfo"); }
+		, "!oaserver DEPRECATED, use !oasfind & !oasinfo."
+		, [&](const message& msg){ bot.fc_reply(msg, "Please use !oasfind & !oasinfo"); }
 	});
 	add
 	({
@@ -1419,7 +1419,7 @@ bool PFinderIrcBotPlugin::initialize()
 	add
 	({
 		"!oasfind"
-		, "!oasfind <wildcard> ?(#n) - Find ,batch number n, the servers matching <wildcard>."
+		, "!oasfind <wildcard> ?(#n) - Find the servers matching <wildcard>, listing batch number n."
 		, [&](const message& msg){ oasfind(msg); }
 	});
 	add
