@@ -612,8 +612,9 @@ bool PFinderIrcBotPlugin::read_servers(const message& msg, oasdata_map& m, siz& 
 					log("Bad record: " << line);
 					continue;
 				}
-				str key = oasd.host + std::to_string(oasd.port);
-				m[key] = oasd;
+//				str key = oasd.host + std::to_string(oasd.port);
+				str oasd_key = oasd.host + ":" + std::to_string(oasd.port);
+				m[oasd_key] = oasd;
 			}
 		}
 	}
@@ -643,7 +644,7 @@ bool PFinderIrcBotPlugin::read_servers(const message& msg, oasdata_map& m, siz& 
 				oasdata oasd;
 
 				// allocate uid if necessary
-				str oasd_key = server.host + std::to_string(server.port);
+				str oasd_key = server.host + ":" + std::to_string(server.port);
 				if(m.find(oasd_key) != m.end())
 					oasd = m[oasd_key]; // start with cached values
 				else
@@ -827,7 +828,7 @@ bool PFinderIrcBotPlugin::oasinfo(const message& msg)
 	for(const std::pair<const str, oasdata>& oasdp: oasds)
 	{
 		const oasdata& oasd = oasdp.second;
-		if(oasd.name != id && std::to_string(oasd.uid) != id)
+		if(oasd.name != id && std::to_string(oasd.uid) != id && (oasd.host + ":" + std::to_string(oasd.port)) != id)
 			continue;
 
 		str_map cvars;
@@ -1425,7 +1426,7 @@ bool PFinderIrcBotPlugin::initialize()
 	add
 	({
 		"!oasinfo"
-		, "!oasinfo <uid>|<name> - List players for the the server named <uid> or <name>."
+		, "!oasinfo <uid>|<name>|<ipv4:port> - List players for the the server named <uid> or <name>."
 		, [&](const message& msg){ oasinfo(msg); }
 	});
 	add
