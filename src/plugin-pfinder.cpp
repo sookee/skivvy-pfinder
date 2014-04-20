@@ -47,7 +47,7 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include <skivvy/ios.h>
 #include <skivvy/irc.h>
 #include <skivvy/stl.h>
-#include <skivvy/types.h>
+#include <sookee/types.h>
 #include <skivvy/ircbot.h>
 #include <skivvy/logrep.h>
 #include <skivvy/utils.h>
@@ -63,7 +63,7 @@ using namespace skivvy;
 using namespace skivvy::oa;
 using namespace skivvy::irc;
 using namespace skivvy::oacom;
-using namespace skivvy::types;
+using namespace sookee::types;
 using namespace skivvy::utils;
 using namespace sookee::string;
 using namespace skivvy::ircbot;
