@@ -31,6 +31,8 @@ http://www.gnu.org/licenses/gpl-2.0.html
 
 '-----------------------------------------------------------------*/
 
+#include <sookee/types.h>
+
 #include <skivvy/ircbot.h>
 
 #include <skivvy/network.h>
@@ -41,7 +43,7 @@ http://www.gnu.org/licenses/gpl-2.0.html
 namespace skivvy { namespace pfinder {
 
 using namespace skivvy;
-using namespace skivvy::types;
+using namespace sookee::types;
 using namespace skivvy::ircbot;
 
 str html_handle_to_irc(str html);

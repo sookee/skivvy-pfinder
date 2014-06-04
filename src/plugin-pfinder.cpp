@@ -47,7 +47,7 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include <skivvy/ios.h>
 #include <skivvy/irc.h>
 #include <skivvy/stl.h>
-#include <skivvy/types.h>
+#include <sookee/types.h>
 #include <skivvy/utils.h>
 #include <skivvy/ircbot.h>
 #include <skivvy/logrep.h>
@@ -64,7 +64,7 @@ using namespace skivvy;
 using namespace skivvy::oa;
 using namespace skivvy::irc;
 using namespace skivvy::oacom;
-using namespace skivvy::types;
+using namespace sookee::types;
 using namespace skivvy::utils;
 using namespace sookee::string;
 using namespace skivvy::ircbot;
@@ -565,6 +565,7 @@ bool PFinderIrcBotPlugin::read_servers(const message& msg, oasdata_map& m)
 	siz uid;
 	return read_servers(msg, m, uid);
 }
+
 bool PFinderIrcBotPlugin::read_servers(const message& msg, oasdata_map& m, siz& ret_uid)
 {
 	const str uidfile = bot.getf(SERVER_UID_FILE, SERVER_UID_FILE_DEFAULT);
@@ -639,7 +640,7 @@ bool PFinderIrcBotPlugin::read_servers(const message& msg, oasdata_map& m, siz& 
 				if(!getstatus(server.host, server.port, status))
 					continue; // don't count unreachable servers
 
-				std::chrono::microseconds us = hr_clk::now().time_since_epoch() - now.time_since_epoch();
+				auto us = hr_clk::now().time_since_epoch() - now.time_since_epoch();
 
 				oasdata oasd;
 
