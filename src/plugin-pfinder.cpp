@@ -989,7 +989,7 @@ void PFinderIrcBotPlugin::read_links_file(str_set_map& links)
 void PFinderIrcBotPlugin::write_links_file(const str_set_map& links)
 {
 	std::ofstream ofs(bot.getf(LINKS_FILE, LINKS_FILE_DEFAULT));
-	for(const str_set_pair& link: links)
+	for(const str_set_map_vt& link: links)
 		for(const str& item: link.second)
 			ofs << link.first << ' ' << item << '\n';
 	links_changed = true;
@@ -1059,7 +1059,7 @@ void PFinderIrcBotPlugin::oalist(const message& msg)
 		if(lower_copy(group) == "all")
 		{
 			// list groups
-			for(const str_set_pair& link: links)
+			for(const str_set_map_vt& link: links)
 			{
 				oss << delim << IRC_BOLD << "[" << n << "]" << IRC_NORMAL << " '" + link.first + "'";
 				if(oss.str().size() < 400)
@@ -1269,7 +1269,7 @@ void PFinderIrcBotPlugin::check_tell()
 //	{
 		tell t;
 		str_vec tells = store.get_vec("tells");
-		for(str_vec_itr i = tells.begin(); i != tells.end();)
+		for(str_vec_iter i = tells.begin(); i != tells.end();)
 		{
 			siss iss(*i);
 			if(!(iss >> t.from >> std::ws >> t.msg >> t.nick >> t.minutes))
