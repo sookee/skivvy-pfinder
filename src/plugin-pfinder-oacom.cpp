@@ -44,10 +44,11 @@ http://www.gnu.org/licenses/gpl-2.0.html
 
 #include <sookee/log.h>
 #include <sookee/bug.h>
+#include <sookee/ios.h>
 
-#include <skivvy/logrep.h>
+//#include <skivvy/logrep.h>
 #include <skivvy/plugin-pfinder-oacom.h>
-#include <skivvy/types.h>
+#include <sookee/types/basic.h>
 
 #define TIMEOUT 1000
 #define MASTER_TIMEOUT 10000
@@ -55,10 +56,11 @@ http://www.gnu.org/licenses/gpl-2.0.html
 namespace skivvy { namespace oacom {
 
 using namespace skivvy;
-using namespace skivvy::utils;
-using namespace skivvy::types;
+//using namespace skivvy::utils;
+using namespace sookee::types;
 using namespace sookee::log;
 using namespace sookee::bug;
+using namespace sookee::ios;
 
 /**
  * IPv4 IPv6 agnostic OOB (out Of Band) comms
