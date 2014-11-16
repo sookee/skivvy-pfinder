@@ -66,7 +66,7 @@ using namespace skivvy::irc;
 using namespace skivvy::oacom;
 using namespace sookee::types;
 using namespace skivvy::utils;
-using namespace sookee::string;
+using namespace sookee::utils;
 using namespace skivvy::ircbot;
 
 const str MAX_MATCHES = "pfinder.max_matches";

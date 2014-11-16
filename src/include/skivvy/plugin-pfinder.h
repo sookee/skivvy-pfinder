@@ -46,6 +46,8 @@ using namespace skivvy;
 using namespace sookee::types;
 using namespace skivvy::ircbot;
 
+USING_MAP(str, str_set, str_set_map);
+
 str html_handle_to_irc(str html);
 
 /**
