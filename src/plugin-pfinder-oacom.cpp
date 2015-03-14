@@ -79,8 +79,9 @@ bool aocom(const str& cmd, str_vec& packets, const str& host, int port
 	hints.ai_family = AF_UNSPEC; // AF_INET or AF_INET6
 	hints.ai_socktype = SOCK_DGRAM;
 
+	int status;
 	addrinfo* res;
-	if(int status = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &res) != 0)
+	if((status = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &res)) != 0)
 	{
 		log(gai_strerror(status));
 		return false;
