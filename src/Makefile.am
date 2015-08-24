@@ -13,7 +13,7 @@ GEN_FLAGS = -Wl,-E -Wfatal-errors -Wall -Wextra -Winit-self -ansi -pedantic -pip
 	-I$(top_srcdir)/src/include
 	
 AM_CPPFLAGS = $(SOOKEE_CFLAGS) $(SKIVVY_CFLAGS)
-AM_CXXFLAGS = $(GEN_FLAGS) $(DEF_FLAGS) -std=gnu++11
+AM_CXXFLAGS = $(GEN_FLAGS) $(DEF_FLAGS)
 
 # -Wl,-E is required for programs that load plugin's
 PLUGIN_FLAGS = -Wl,-E
